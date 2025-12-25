@@ -67,7 +67,6 @@
                         <form method="POST" action="/cart/add-from-form" style="flex: 1; margin: 0;">
                             <input type="hidden" name="product_id" value="<?= htmlspecialchars($product['id']) ?>">
                             <input type="hidden" name="quantite" value="1">
-                            <input type="hidden" name="user_id" value="1">
                             <button type="submit" 
                                     style="width: 100%; padding: 8px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;"
                                     <?= $product['stock'] <= 0 ? 'disabled title="Stock épuisé"' : '' ?>>
@@ -86,7 +85,7 @@
     
     <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
         <a href="/" style="color: #007bff; text-decoration: none;">← Retour à l'accueil</a>
-        <a href="/cart?user_id=1" style="padding: 10px 20px; background-color: #ffc107; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold;">
+        <a href="/cart" style="padding: 10px 20px; background-color: #ffc107; color: #000; text-decoration: none; border-radius: 4px; font-weight: bold;">
             🛒 Voir mon panier
         </a>
     </div>

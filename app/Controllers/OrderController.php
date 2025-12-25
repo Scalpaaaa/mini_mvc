@@ -15,7 +15,11 @@ final class OrderController extends Controller
      */
     public function listByUser(): void
     {
-        $user_id = $_GET['user_id'] ?? 1; // Par défaut user_id = 1 pour la démo
+        $user_id = $_SESSION['user_id'] ?? null;
+        if ($user_id === null) {
+            header('Location: /login');
+            return;
+        }
         
         $orders = Order::getByUserId($user_id);
         
@@ -83,7 +87,11 @@ final class OrderController extends Controller
     public function create(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cart?user_id=' . ($_GET['user_id'] ?? 1));
+            if (!isset($_SESSION['user_id'])) {
+                header('Location: /login');
+            } else {
+                header('Location: /cart');
+            }
             return;
         }
         
@@ -92,12 +100,16 @@ final class OrderController extends Controller
             $input = $_POST;
         }
         
-        $user_id = $input['user_id'] ?? $_GET['user_id'] ?? 1;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if ($user_id === null) {
+            header('Location: /login');
+            return;
+        }
         
         // Vérifie que le panier n'est pas vide
         $cartItems = Cart::getByUserId($user_id);
         if (empty($cartItems)) {
-            header('Location: /cart?user_id=' . $user_id . '&error=empty_cart');
+            header('Location: /cart?error=empty_cart');
             return;
         }
         
@@ -107,7 +119,7 @@ final class OrderController extends Controller
         if ($orderId) {
             header('Location: /orders/show?id=' . $orderId . '&success=created');
         } else {
-            header('Location: /cart?user_id=' . $user_id . '&error=create_failed');
+            header('Location: /cart?error=create_failed');
         }
     }
 

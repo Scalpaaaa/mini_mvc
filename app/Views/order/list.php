@@ -65,7 +65,7 @@
                             </div>
                             
                             <div style="color: #666; font-size: 14px; margin-bottom: 10px;">
-                                <strong>Date :</strong> <?= date('d/m/Y à H:i', strtotime($order['created_at'])) ?>
+                                <strong>Date :</strong> <?= date('d/m/Y à H:i', strtotime($order['date'])) ?>
                             </div>
                             
                             <div style="font-size: 24px; font-weight: bold; color: #007bff;">

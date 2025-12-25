@@ -15,7 +15,12 @@ final class CartController extends Controller
      */
     public function show(): void
     {
-        $user_id = $_GET['user_id'] ?? 1; // Par défaut user_id = 1 pour la démo
+        $user_id = $_SESSION['user_id'] ?? null;
+        if ($user_id === null) {
+            // Pas connecté : on redirige vers la page de connexion
+            header('Location: /login');
+            return;
+        }
         
         // Ici je récupère les produits du panier de l'user authentifié
         $cartItems = Cart::getByUserId($user_id);
@@ -135,7 +140,12 @@ final class CartController extends Controller
         
         $product_id = $_POST['product_id'] ?? null;
         $quantite = intval($_POST['quantite'] ?? 1);
-        $user_id = $_POST['user_id'] ?? $_GET['user_id'] ?? 1; // Par défaut user_id = 1 pour la démo
+        $user_id = $_SESSION['user_id'] ?? null;
+
+        if ($user_id === null) {
+            header('Location: /login');
+            return;
+        }
         
         if (!$product_id) {
             header('Location: /products');
@@ -161,7 +171,7 @@ final class CartController extends Controller
         $cart->setQuantite($quantite);
         
         if ($cart->save()) {
-            header('Location: /cart?user_id=' . $user_id . '&success=added');
+            header('Location: /cart?success=added');
         } else {
             header('Location: /products/show?id=' . $product_id . '&error=add_failed');
         }
@@ -173,7 +183,11 @@ final class CartController extends Controller
     public function update(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT') {
-            header('Location: /cart');
+            if (!isset($_SESSION['user_id'])) {
+                header('Location: /login');
+            } else {
+                header('Location: /cart');
+            }
             return;
         }
         
@@ -183,7 +197,7 @@ final class CartController extends Controller
         }
         
         if (empty($input['cart_id']) || empty($input['quantite'])) {
-            header('Location: /cart?user_id=' . ($_GET['user_id'] ?? 1) . '&error=missing_fields');
+            header('Location: /cart?error=missing_fields');
             return;
         }
         
@@ -194,14 +208,14 @@ final class CartController extends Controller
         $cartItem = $stmt->fetch(\PDO::FETCH_ASSOC);
         
         if (!$cartItem) {
-            header('Location: /cart?user_id=' . ($_GET['user_id'] ?? 1) . '&error=item_not_found');
+            header('Location: /cart?error=item_not_found');
             return;
         }
         
         // Vérifie le stock
         $product = Product::findById($cartItem['product_id']);
         if ($product['stock'] < $input['quantite']) {
-            header('Location: /cart?user_id=' . $cartItem['user_id'] . '&error=stock_insuffisant');
+            header('Location: /cart?error=stock_insuffisant');
             return;
         }
         
@@ -212,9 +226,9 @@ final class CartController extends Controller
         $cart->setQuantite($input['quantite']);
         
         if ($cart->save()) {
-            header('Location: /cart?user_id=' . $cartItem['user_id'] . '&success=updated');
+            header('Location: /cart?success=updated');
         } else {
-            header('Location: /cart?user_id=' . $cartItem['user_id'] . '&error=update_failed');
+            header('Location: /cart?error=update_failed');
         }
     }
 
@@ -224,7 +238,11 @@ final class CartController extends Controller
     public function remove(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'DELETE' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cart');
+            if (!isset($_SESSION['user_id'])) {
+                header('Location: /login');
+            } else {
+                header('Location: /cart');
+            }
             return;
         }
         
@@ -236,7 +254,7 @@ final class CartController extends Controller
         $cart_id = $input['cart_id'] ?? $_GET['cart_id'] ?? null;
         
         if (!$cart_id) {
-            header('Location: /cart?user_id=' . ($_GET['user_id'] ?? 1) . '&error=missing_cart_id');
+            header('Location: /cart?error=missing_cart_id');
             return;
         }
         
@@ -245,15 +263,15 @@ final class CartController extends Controller
         $stmt = $pdo->prepare("SELECT user_id FROM panier WHERE id = ?");
         $stmt->execute([$cart_id]);
         $cartItem = $stmt->fetch(\PDO::FETCH_ASSOC);
-        $user_id = $cartItem['user_id'] ?? ($_GET['user_id'] ?? 1);
+        $user_id = $cartItem['user_id'] ?? null;
         
         $cart = new Cart();
         $cart->setId($cart_id);
         
         if ($cart->delete()) {
-            header('Location: /cart?user_id=' . $user_id . '&success=removed');
+            header('Location: /cart?success=removed');
         } else {
-            header('Location: /cart?user_id=' . $user_id . '&error=delete_failed');
+            header('Location: /cart?error=delete_failed');
         }
     }
 
@@ -272,12 +290,16 @@ final class CartController extends Controller
             $input = $_POST;
         }
         
-        $user_id = $input['user_id'] ?? $_GET['user_id'] ?? 1;
+        $user_id = $_SESSION['user_id'] ?? null;
+        if ($user_id === null) {
+            header('Location: /login');
+            return;
+        }
         
         if (Cart::clearByUserId($user_id)) {
-            header('Location: /cart?user_id=' . $user_id . '&success=cleared');
+            header('Location: /cart?success=cleared');
         } else {
-            header('Location: /cart?user_id=' . $user_id . '&error=clear_failed');
+            header('Location: /cart?error=clear_failed');
         }
     }
 }

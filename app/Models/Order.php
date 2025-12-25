@@ -94,8 +94,8 @@ class Order
         $pdo = Database::getPDO();
         $stmt = $pdo->prepare("
             SELECT * FROM commande 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
+            WHERE utilisateur_id = ? 
+            ORDER BY date DESC
         ");
         $stmt->execute([$user_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -111,9 +111,9 @@ class Order
         $stmt = $pdo->query("
             SELECT c.*, u.nom as user_nom, u.email as user_email
             FROM commande c
-            INNER JOIN user u ON c.user_id = u.id
+            INNER JOIN utilisateur u ON c.utilisateur_id = u.id
             WHERE c.statut = 'validee'
-            ORDER BY c.created_at DESC
+            ORDER BY c.date DESC
         ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -131,7 +131,7 @@ class Order
         $stmt = $pdo->prepare("
             SELECT c.*, u.nom as user_nom, u.email as user_email
             FROM commande c
-            INNER JOIN user u ON c.user_id = u.id
+            INNER JOIN utilisateur u ON c.utilisateur_id = u.id
             WHERE c.id = ?
         ");
         $stmt->execute([$id]);
@@ -143,11 +143,11 @@ class Order
         
         // Récupère les produits de la commande
         $stmt = $pdo->prepare("
-            SELECT cp.*, p.nom as product_nom, p.image_url, cat.nom as categorie_nom
-            FROM commande_produit cp
-            INNER JOIN produit p ON cp.product_id = p.id
+            SELECT oi.*, p.nom as product_nom, p.image_url, cat.nom as categorie_nom
+            FROM order_item oi
+            INNER JOIN produit p ON oi.produit_id = p.id
             LEFT JOIN categorie cat ON p.categorie_id = cat.id
-            WHERE cp.commande_id = ?
+            WHERE oi.commande_id = ?
         ");
         $stmt->execute([$id]);
         $order['products'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -178,12 +178,12 @@ class Order
             $pdo->beginTransaction();
             
             // Crée la commande
-            $stmt = $pdo->prepare("INSERT INTO commande (user_id, statut, total) VALUES (?, 'validee', ?)");
+            $stmt = $pdo->prepare("INSERT INTO commande (utilisateur_id, statut, total, date) VALUES (?, 'validee', ?, NOW())");
             $stmt->execute([$user_id, $total]);
             $orderId = $pdo->lastInsertId();
             
             // Ajoute les produits à la commande
-            $stmt = $pdo->prepare("INSERT INTO commande_produit (commande_id, product_id, quantite, prix_unitaire) VALUES (?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO order_item (commande_id, produit_id, quantite, prix_unitaire) VALUES (?, ?, ?, ?)");
             
             foreach ($cartItems as $item) {
                 $product = Product::findById($item['id']);

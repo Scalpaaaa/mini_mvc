@@ -71,9 +71,10 @@
             <select 
                 id="categorie_id" 
                 name="categorie_id"
+                required
                 style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"
             >
-                <option value="">-- Sélectionnez une catégorie (optionnel) --</option>
+                <option value="">-- Sélectionnez une catégorie --</option>
                 <?php if (isset($categories)): ?>
                     <?php foreach ($categories as $categorie): ?>
                         <option 
@@ -85,7 +86,7 @@
                     <?php endforeach; ?>
                 <?php endif; ?>
             </select>
-            <small style="display: block; margin-top: 5px; color: #666;">Sélectionnez la catégorie du produit (optionnel)</small>
+            <small style="display: block; margin-top: 5px; color: #666;">Sélectionnez la catégorie du produit.</small>
         </div>
         
         <div>

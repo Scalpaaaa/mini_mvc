@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+// Démarre la session pour gérer l'authentification utilisateur
+session_start();
+
 require dirname(path: __DIR__) . '/vendor/autoload.php';
 
 use Mini\Core\Router;
@@ -29,6 +32,12 @@ $routes = [
     ['GET', '/orders/show', [Mini\Controllers\OrderController::class, 'show']],
     ['POST', '/orders/create', [Mini\Controllers\OrderController::class, 'create']],
     ['POST', '/orders/update-status', [Mini\Controllers\OrderController::class, 'updateStatus']],
+    // Routes d'authentification
+    ['GET', '/login', [Mini\Controllers\AuthController::class, 'showLoginForm']],
+    ['POST', '/login', [Mini\Controllers\AuthController::class, 'login']],
+    ['GET', '/register', [Mini\Controllers\AuthController::class, 'showRegisterForm']],
+    ['POST', '/register', [Mini\Controllers\AuthController::class, 'register']],
+    ['GET', '/logout', [Mini\Controllers\AuthController::class, 'logout']],
 ];
 // Bootstrap du router
 $router = new Router($routes);

@@ -11,6 +11,8 @@ class User
     private $id;
     private $nom;
     private $email;
+    // On suppose l'existence d'une colonne mot_de_passe (hash) dans la table `utilisateur`
+    private $mot_de_passe;
 
     // =====================
     // Getters / Setters
@@ -46,6 +48,16 @@ class User
         $this->email = $email;
     }
 
+    public function getMotDePasse()
+    {
+        return $this->mot_de_passe;
+    }
+
+    public function setMotDePasse($mot_de_passe)
+    {
+        $this->mot_de_passe = $mot_de_passe;
+    }
+
     // =====================
     // Méthodes CRUD
     // =====================
@@ -57,7 +69,7 @@ class User
     public static function getAll()
     {
         $pdo = Database::getPDO();
-        $stmt = $pdo->query("SELECT * FROM user ORDER BY id DESC");
+        $stmt = $pdo->query("SELECT * FROM utilisateur ORDER BY id DESC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -69,7 +81,7 @@ class User
     public static function findById($id)
     {
         $pdo = Database::getPDO();
-        $stmt = $pdo->prepare("SELECT * FROM user WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -82,7 +94,7 @@ class User
     public static function findByEmail($email)
     {
         $pdo = Database::getPDO();
-        $stmt = $pdo->prepare("SELECT * FROM user WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT * FROM utilisateur WHERE email = ?");
         $stmt->execute([$email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -94,8 +106,25 @@ class User
     public function save()
     {
         $pdo = Database::getPDO();
-        $stmt = $pdo->prepare("INSERT INTO user (nom, email) VALUES (?, ?)");
-        return $stmt->execute([$this->nom, $this->email]);
+        // Méthode de base (sans mot de passe) conservée pour compatibilité
+        // On renseigne aussi un rôle par défaut pour respecter la contrainte NOT NULL
+        $stmt = $pdo->prepare("INSERT INTO utilisateur (nom, email, role) VALUES (?, ?, ?)");
+        return $stmt->execute([$this->nom, $this->email, 'client']);
+    }
+
+    /**
+     * Crée un utilisateur avec un mot de passe hashé
+     * Nécessite une colonne mot_de_passe dans la table `utilisateur`
+     * @param string $passwordHash Le mot de passe hashé
+     * @param string $role Le rôle de l'utilisateur (par défaut 'client')
+     */
+    public function saveWithPassword(string $passwordHash, string $role = 'client'): bool
+    {
+        $pdo = Database::getPDO();
+        // Valide le rôle (seulement 'admin' ou 'client' pour la sécurité)
+        $role = in_array($role, ['admin', 'client']) ? $role : 'client';
+        $stmt = $pdo->prepare("INSERT INTO utilisateur (nom, email, mot_de_passe, role) VALUES (?, ?, ?, ?)");
+        return $stmt->execute([$this->nom, $this->email, $passwordHash, $role]);
     }
 
     /**
@@ -105,7 +134,7 @@ class User
     public function update()
     {
         $pdo = Database::getPDO();
-        $stmt = $pdo->prepare("UPDATE user SET nom = ?, email = ? WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE utilisateur SET nom = ?, email = ? WHERE id = ?");
         return $stmt->execute([$this->nom, $this->email, $this->id]);
     }
 
@@ -116,7 +145,7 @@ class User
     public function delete()
     {
         $pdo = Database::getPDO();
-        $stmt = $pdo->prepare("DELETE FROM user WHERE id = ?");
+        $stmt = $pdo->prepare("DELETE FROM utilisateur WHERE id = ?");
         return $stmt->execute([$this->id]);
     }
 }

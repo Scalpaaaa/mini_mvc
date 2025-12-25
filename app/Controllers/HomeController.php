@@ -7,20 +7,21 @@ namespace Mini\Controllers;
 // Importe la classe de base Controller du noyau
 use Mini\Core\Controller;
 use Mini\Models\User;
+use Mini\Models\Product;
 
 // Déclare la classe finale HomeController qui hérite de Controller
 final class HomeController extends Controller
 {
-    // Déclare la méthode d'action par défaut qui ne retourne rien
+    // Page d'accueil : affiche la liste des produits
     public function index(): void
     {
-        // Appelle le moteur de rendu avec la vue et ses paramètres
-        $this->render('home/index', params: [
-            // Définit le titre transmis à la vue
-            'title' => 'Mini MVC',
-            'prenom' => 'Toto',
-            'prenom2' => 'Tata',
-            'test' => '123'
+        // Récupère tous les produits
+        $products = Product::getAll();
+
+        // Réutilise la vue de liste de produits pour en faire une vraie page d'accueil e‑commerce
+        $this->render('product/list-products', params: [
+            'title' => 'Accueil - Liste des produits',
+            'products' => $products
         ]);
     }
 

@@ -14,12 +14,12 @@
         <div style="text-align: center; padding: 40px; background-color: #f8d7da; border-radius: 4px; color: #721c24;">
             <h2>Commande introuvable</h2>
             <p>La commande que vous recherchez n'existe pas ou a été supprimée.</p>
-            <a href="/orders?user_id=<?= $order['user_id'] ?? 1 ?>" style="color: #007bff; text-decoration: none;">← Retour à mes commandes</a>
+            <a href="/orders" style="color: #007bff; text-decoration: none;">← Retour à mes commandes</a>
         </div>
     <?php else: ?>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h2>Détails de la commande #<?= htmlspecialchars($order['id']) ?></h2>
-            <a href="/orders?user_id=<?= htmlspecialchars($order['user_id']) ?>" style="padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">
+            <a href="/orders" style="padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">
                 ← Retour à mes commandes
             </a>
         </div>
@@ -70,7 +70,7 @@
                 <div>
                     <div style="color: #666; font-size: 14px; margin-bottom: 5px;">Date de commande</div>
                     <div style="font-weight: bold; color: #333;">
-                        <?= date('d/m/Y à H:i', strtotime($order['created_at'])) ?>
+                        <?= date('d/m/Y à H:i', strtotime($order['date'])) ?>
                     </div>
                 </div>
                 <div>

@@ -47,6 +47,13 @@ final class ProductController extends Controller
 
     public function showCreateProductForm(): void
     {
+        // Vérifie que l'utilisateur est admin
+        $userRole = $_SESSION['user_role'] ?? null;
+        if ($userRole !== 'admin') {
+            header('Location: /products?error=access_denied');
+            return;
+        }
+        
         // Récupère toutes les catégories
         $categories = Category::getAll();
         
@@ -59,6 +66,13 @@ final class ProductController extends Controller
 
     public function createProduct(): void
     {
+        // Vérifie que l'utilisateur est admin
+        $userRole = $_SESSION['user_role'] ?? null;
+        if ($userRole !== 'admin') {
+            header('Location: /products?error=access_denied');
+            return;
+        }
+        
         // Vérifie que la méthode HTTP est POST
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: /products/create');
@@ -72,10 +86,10 @@ final class ProductController extends Controller
         $categories = Category::getAll();
         
         // Valide les données requises
-        if (empty($input['nom']) || empty($input['prix']) || empty($input['stock'])) {
+        if (empty($input['nom']) || empty($input['prix']) || empty($input['stock']) || empty($input['categorie_id'])) {
             $this->render('product/create-product', params: [
                 'title' => 'Créer un produit',
-                'message' => 'Les champs "nom", "prix" et "stock" sont requis.',
+                'message' => 'Les champs "nom", "prix", "stock" et "catégorie" sont requis.',
                 'success' => false,
                 'old_values' => $input,
                 'categories' => $categories
@@ -127,7 +141,8 @@ final class ProductController extends Controller
         $product->setPrix(floatval($input['prix']));
         $product->setStock(intval($input['stock']));
         $product->setImageUrl($image_url);
-        $product->setCategorieId(!empty($input['categorie_id']) ? intval($input['categorie_id']) : null);
+        // Catégorie obligatoire pour éviter l'erreur SQL "categorie_id cannot be null"
+        $product->setCategorieId((int)$input['categorie_id']);
         
         // Sauvegarde le produit
         if ($product->save()) {
